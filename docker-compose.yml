@@ -1,0 +1,38 @@
+# указать версию композита
+version: '3.8.10'
+# Указываем сервисы для нашей установки docker compose
+services:
+  api:
+    build:
+      # путь к директории, содержащей Dockerfile
+      контекст: .
+      # Укажите имя образа
+    image: products_api
+    # этот том используется для отображения файлов и папок на хосте на контейнер
+    # таким образом, если мы изменим код на хосте, код в докер-контейнере также будет изменен
+    volumes:
+      - .:/app
+    # Сопоставление порта 8000 на хосте с портом 8000 в контейнере
+    ports:
+      - 8000:8000
+    # Указать путь к файлу .env
+    env_file:
+      - ./.env
+    # Определите зависимость от сервиса "products_db", чтобы он запускался первым
+    depends_on:
+      - products_db
+  products_db:
+    # указать имя образа нашей базы данных
+    # Если образ не найден в нашем локальном репозитории
+    # Он будет взят из реестра докеров, которым является Docker Hub
+    image: postgres:16rc1-alpine3.18
+    # Монтируем том для хранения данных postgreSQL
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    окружение:  # Использовать переменные окружения для настройки db
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DATABASE=${POSTGRES_DATABASE}
+# Определите том для сохранения данных postgreSQL
+volumes:
+  postgres_data:
